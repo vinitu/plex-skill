@@ -10,6 +10,12 @@ Works with any local Plex Media Server and the plex.tv Watchlist.
 npx skills add vinitu/plex-skill
 ```
 
+Or with [skills.sh](https://skills.sh):
+
+```bash
+skills.sh add vinitu/plex-skill
+```
+
 ## What it does
 
 This skill gives AI agents (Claude Code, Cursor, Copilot, etc.) the ability to:
