@@ -1,0 +1,9 @@
+{
+  "MediaContainer": {
+    "friendlyName": "Test Server",
+    "version": "1.40.0.7998",
+    "machineIdentifier": "machine-123",
+    "platform": "Linux",
+    "updatedAt": "1700000000"
+  }
+}

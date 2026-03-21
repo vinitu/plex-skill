@@ -2,51 +2,70 @@
 
 ## Purpose
 
-This repository provides an AI skill for interacting with Plex Media Server through its HTTP API and the plex.tv cloud API (Watchlist).
+This repository provides an AI skill for Plex Media Server.
+It reads data from the local Plex HTTP API and from the Plex Discover Watchlist API.
+The skill is for agents, so JSON output and stable command contracts matter more than shell convenience.
 
-Primary goals:
-- keep the CLI dependency-free for local server commands (stdlib only);
-- use `plexapi` only for plex.tv cloud features (Watchlist);
-- preserve predictable JSON I/O for agents;
-- never print or commit real Plex tokens.
+## Source Of Truth
+
+- `SKILL.md` is the source of truth for the public skill contract.
+- `scripts/commands/` is the public command surface for humans and agents.
+- `scripts/lib/` is internal implementation only.
+- `README.md` is the source of truth for install, layout, validation, and limits.
 
 ## Repository Layout
 
-- `SKILL.md`: the skill contract and usage instructions for agents.
-- `README.md`: public project overview and installation notes.
-- `.github/workflows/ci-pr.yml`: PR validation, auto-merge, version bump, tag, and release flow.
-- `.github/workflows/ci-main.yml`: main-branch validation, patch tag, and release flow.
-- `scripts/plex_cli.py`: main CLI script — all Plex operations.
-- `references/api-cheatsheet.md`: maps CLI commands to Plex API endpoints.
-- `.env`: credentials file (git-ignored, never committed).
+- `AGENTS.md`: repository rules for coding agents.
+- `README.md`: human-facing overview, setup, layout, validation, and limits.
+- `SKILL.md`: agent-facing interface and JSON contract.
+- `Makefile`: standard entrypoints for checks and tests.
+- `scripts/commands/`: public command wrappers.
+- `scripts/lib/`: internal helper scripts used by the public wrappers.
+- `references/api-cheatsheet.md`: endpoint mapping.
+- `tests/`: smoke checks, contract checks, mocks, and fixtures.
+- `.github/workflows/`: CI validation workflows.
+
+## Public Interface
+
+- Public read commands live in `scripts/commands/server/` and `scripts/commands/watchlist/`.
+- Public write command: `scripts/commands/server/refresh_section.sh`.
+- Public commands must keep JSON success and error envelopes stable.
+- Public commands must stay runnable from the repo root.
+
+## Internal Implementation
+
+- `scripts/lib/plex_runtime.sh` is internal runtime code.
+- `tests/mocks/` and `tests/fixtures/` are test-only internals.
+- `references/` is documentation support, not runtime API.
 
 ## Working Rules
 
-- The CLI must work with Python 3.8+ stdlib for all local server commands. The only external dependency is `plexapi` for the `watchlist` command.
-- Preserve CLI behavior. Existing commands, arguments, and output shapes should remain stable unless the task explicitly requires a breaking change.
-- Preserve JSON output as the integration boundary. Success and error responses should stay machine-readable.
-- If you change script behavior, update both `SKILL.md` and `README.md` when usage, arguments, or examples change.
-- Never log, print, or commit `PLEX_TOKEN` or `.env` contents.
-- Keep `references/api-cheatsheet.md` in sync when adding new commands or endpoints.
-
-## Script Conventions
-
-- Read-only operations: `ping`, `libraries`, `search`, `recently-added`, `sessions`, `metadata`, `watchlist`.
-- Write operations: `refresh-section` (triggers a library scan).
-- All commands return `{"success": true, ...}` on success and `{"success": false, "error": "..."}` on failure.
-- The `.env` file is loaded automatically from the skill root (parent of `scripts/`).
+- Keep the runtime dependency-light: Bash, `curl`, and `jq`.
+- Preserve existing JSON field names and envelope shapes unless a breaking change is explicitly requested.
+- Update `README.md`, `SKILL.md`, and `references/api-cheatsheet.md` when command behaviour or output changes.
+- Never print, log, or commit real Plex tokens or `.env` contents.
+- Keep write operations explicit and clearly marked.
 
 ## Validation
 
-After making changes:
-- run `python3 scripts/plex_cli.py ping` to verify connectivity;
-- test modified commands against a live Plex server if available;
-- at minimum, syntax-check with `python3 -m py_compile scripts/plex_cli.py`;
-- verify `SKILL.md` and `README.md` examples match actual CLI behavior.
+Run from the repo root:
+
+- `make check`
+- `make compile`
+- `make test`
+- `scripts/commands/server/ping.sh` against a real Plex server when live verification is possible
 
 ## Common Pitfalls
 
-- The Plex Watchlist is a plex.tv cloud feature — it does NOT exist on the local server API. Always use `plexapi` for watchlist access.
-- Plex API returns XML by default. The CLI parses XML responses; do not assume JSON from the server.
-- `ratingKey` from watchlist items (plex.tv) may not match local server `ratingKey` values. Use `search` to find local library matches.
-- The `.env` file must be in the skill root (next to `SKILL.md`), not inside `scripts/`.
+- The Watchlist is a Plex Discover cloud feature. It does not exist on the local Plex server API.
+- Watchlist `ratingKey` values may not match local server `ratingKey` values.
+- The public command surface is `scripts/commands/`. Do not document test helpers or fixtures as user commands.
+- This repo does not use `scripts/applescripts/` because it is an HTTP skill, not a macOS app automation skill.
+- The `.env` file must stay in the skill root, next to `SKILL.md`.
+
+## Safety Rules
+
+- Treat Plex library and session data as real user data.
+- Read operations are safe by default.
+- `refresh_section.sh` is a write operation because it triggers a library scan.
+- Do not add unsupported destructive actions unless the user explicitly asks and the docs are updated.

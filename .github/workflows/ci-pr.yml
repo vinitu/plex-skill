@@ -21,16 +21,11 @@ concurrency:
 
 jobs:
   lint:
-    name: Lint Python & Docs
+    name: Lint Bash & Docs
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
 
       - name: Validate repository structure
         run: |
@@ -40,8 +35,13 @@ jobs:
             LICENSE
             README.md
             SKILL.md
-            scripts/plex_cli.py
+            Makefile
+            scripts/lib/plex_runtime.sh
+            scripts/commands/server/ping.sh
+            scripts/commands/watchlist/list.sh
             references/api-cheatsheet.md
+            tests/smoke_plex.sh
+            tests/dictionary_contract.sh
           )
           for path in "${required[@]}"; do
             [ -f "$path" ] || { echo "::error file=$path::Missing required file"; exit 1; }
@@ -55,11 +55,14 @@ jobs:
             exit 1
           fi
 
-      - name: Syntax-check CLI
-        run: python3 -m py_compile scripts/plex_cli.py
+      - name: Run structural checks
+        run: make check
 
-      - name: Smoke-check help output
-        run: python3 scripts/plex_cli.py --help >/dev/null
+      - name: Run compile checks
+        run: make compile
+
+      - name: Run tests
+        run: make test
 
       - name: Validate SKILL.md frontmatter
         run: |

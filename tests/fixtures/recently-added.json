@@ -1,0 +1,19 @@
+{
+  "MediaContainer": {
+    "Metadata": [
+      {
+        "type": "movie",
+        "ratingKey": "12345",
+        "title": "Alien",
+        "year": "1979",
+        "librarySectionID": "1",
+        "librarySectionTitle": "Movies",
+        "summary": "A creature is on board.",
+        "duration": "7000",
+        "viewCount": "1",
+        "addedAt": "1700000100",
+        "lastViewedAt": "1700000200"
+      }
+    ]
+  }
+}
