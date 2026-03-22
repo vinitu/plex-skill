@@ -21,9 +21,8 @@ Do not call `scripts/lib/` directly.
 - `curl`
 - Plex server URL and token
 
-Keep `.env` in the skill root, next to `SKILL.md`, and never expose a real `PLEX_TOKEN`.
+Keep runtime config in `assets/env`, created from `assets/env.example`, and never expose a real `PLEX_TOKEN`.
 HTTPS requests use `curl -k` by default.
-Keep runtime config in `assets/env`, created from `assets/env.example`.
 
 ## Public Interface
 

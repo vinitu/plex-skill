@@ -64,6 +64,8 @@ Config precedence:
 
 HTTPS requests use `curl -k` by default so self-signed Plex certificates do not block the skill.
 
+HTTPS requests use `curl -k` by default so self-signed Plex certificates do not block the skill.
+
 ## Public interface
 
 Public commands:
