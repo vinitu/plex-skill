@@ -43,7 +43,7 @@ The skill is for agents, so JSON output and stable command contracts matter more
 - Keep the runtime dependency-light: Bash and `curl`.
 - Preserve existing JSON field names and envelope shapes unless a breaking change is explicitly requested.
 - Update `README.md`, `SKILL.md`, and `references/api-cheatsheet.md` when command behaviour or output changes.
-- Never print, log, or commit real Plex tokens or `.env` contents.
+- Never print, log, or commit real Plex tokens or `assets/env` contents.
 - Keep write operations explicit and clearly marked.
 
 ## Validation
@@ -61,7 +61,7 @@ Run from the repo root:
 - Watchlist `ratingKey` values may not match local server `ratingKey` values.
 - The command wrappers under `scripts/commands/` are the only supported public entrypoints.
 - This repo does not use `scripts/applescripts/` because it is an HTTP skill, not a macOS app automation skill.
-- The `.env` file must stay in the skill root, next to `SKILL.md`.
+- The runtime config file must stay at `assets/env`.
 
 ## Safety Rules
 

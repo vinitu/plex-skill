@@ -4,8 +4,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-DOTENV_PATH="${SKILL_ROOT}/.env"
-DOTENV_EXAMPLE_PATH="${SKILL_ROOT}/.env.example"
+DOTENV_PATH="${SKILL_ROOT}/assets/env"
+DOTENV_EXAMPLE_PATH="${SKILL_ROOT}/assets/env.example"
 EXAMPLE_BASE_URL="http://YOUR_PLEX_IP:32400"
 EXAMPLE_TOKEN="YOUR_PLEX_TOKEN"
 DISCOVER_BASE_URL="https://discover.provider.plex.tv"
@@ -160,11 +160,11 @@ normalize_base_url() {
     value="$(trim "${1-}")"
 
     if [[ -z "${value}" ]]; then
-        die_json "PLEX_BASE_URL is required. Create .env from .env.example or pass --base-url."
+        die_json "PLEX_BASE_URL is required. Create assets/env from assets/env.example or pass --base-url."
     fi
 
     if [[ "${value}" == "${EXAMPLE_BASE_URL}" ]]; then
-        die_json "PLEX_BASE_URL still uses the placeholder from .env.example. Replace it with your real Plex server URL."
+        die_json "PLEX_BASE_URL still uses the placeholder from assets/env.example. Replace it with your real Plex server URL."
     fi
 
     if [[ ! "${value}" =~ ^https?://[^[:space:]/][^[:space:]]*$ ]]; then
@@ -183,11 +183,11 @@ normalize_token() {
     value="$(trim "${1-}")"
 
     if [[ -z "${value}" ]]; then
-        die_json "PLEX_TOKEN is required. Create .env from .env.example or pass --token."
+        die_json "PLEX_TOKEN is required. Create assets/env from assets/env.example or pass --token."
     fi
 
     if [[ "${value}" == "${EXAMPLE_TOKEN}" ]]; then
-        die_json "PLEX_TOKEN still uses the placeholder from .env.example. Replace it with your real Plex token."
+        die_json "PLEX_TOKEN still uses the placeholder from assets/env.example. Replace it with your real Plex token."
     fi
 
     NORMALIZED_VALUE="${value}"
@@ -573,6 +573,11 @@ collect_media_items() {
                 fi
             done < <(split_json_array_objects "${hub_array}")
         fi
+    fi
+
+    if [[ "${#items[@]}" -eq 0 ]]; then
+        printf '[]'
+        return
     fi
 
     json_array_from_lines "${items[@]}"

@@ -23,6 +23,7 @@ Do not call `scripts/lib/` directly.
 
 Keep `.env` in the skill root, next to `SKILL.md`, and never expose a real `PLEX_TOKEN`.
 HTTPS requests use `curl -k` by default.
+Keep runtime config in `assets/env`, created from `assets/env.example`.
 
 ## Public Interface
 
@@ -69,8 +70,8 @@ scripts/commands/watchlist/list.sh --sort titleSort:asc
 
 ## Operational Notes
 
-- Config precedence is CLI flags, then shell environment variables, then `.env` in the skill root.
-- Create `.env` from `.env.example` and keep it next to `SKILL.md`.
+- Config precedence is CLI flags, then shell environment variables, then `assets/env`.
+- Create `assets/env` from `assets/env.example`.
 - The Watchlist uses Plex Discover cloud APIs. The other commands use the local Plex server API.
 - Public wrapper scripts delegate parsing and output shaping to `scripts/lib/plex_runtime.sh`.
 
