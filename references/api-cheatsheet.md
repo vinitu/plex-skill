@@ -1,6 +1,6 @@
 # Plex API Cheat Sheet
 
-This file maps public wrappers in `scripts/commands/` to Plex endpoints.
+This file maps the stable `scripts/plex_cli.py` commands, and the equivalent public wrappers in `scripts/commands/`, to Plex endpoints.
 
 ## Auth
 

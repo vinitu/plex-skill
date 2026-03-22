@@ -126,6 +126,44 @@ test_flags_override_and_ping_success() {
     rm -rf "${skill_root}" "${output_file}" "${status_file}" "${request_log}"
 }
 
+test_python_cli_ping_success() {
+    local skill_root=""
+    local output_file=""
+    local status_file=""
+    local output=""
+    local status=""
+    local request_log=""
+
+    skill_root="$(create_skill_root)"
+    cp "${REPO_ROOT}/scripts/plex_cli.py" "${skill_root}/scripts/plex_cli.py"
+    request_log="$(mktemp)"
+    output_file="$(mktemp)"
+    status_file="$(mktemp)"
+
+    set +e
+    MOCK_CURL_FIXTURES_DIR="${FIXTURES_DIR}" \
+    MOCK_CURL_LOG="${request_log}" \
+    PLEX_CURL_BIN="${MOCK_CURL}" \
+    PLEX_JQ_BIN="${JQ_BIN}" \
+    python3 "${skill_root}/scripts/plex_cli.py" \
+        --base-url "http://127.0.0.1:32400/" \
+        --token "secret" \
+        ping \
+        > "${output_file}" 2>&1
+    printf '%s' "$?" > "${status_file}"
+    set -e
+
+    output="$(<"${output_file}")"
+    status="$(<"${status_file}")"
+
+    assert_eq "0" "${status}" "python cli ping exit code"
+    assert_eq "true" "$(printf '%s' "${output}" | "${JQ_BIN}" -r '.success')" "python cli ping success flag"
+    assert_eq "Test Server" "$(printf '%s' "${output}" | "${JQ_BIN}" -r '.server.friendlyName')" "python cli ping server name"
+    assert_eq "GET http://127.0.0.1:32400/" "$(<"${request_log}")" "python cli ping request url"
+
+    rm -rf "${skill_root}" "${output_file}" "${status_file}" "${request_log}"
+}
+
 test_env_file_loaded_for_libraries() {
     local skill_root=""
     local output=""
@@ -171,6 +209,7 @@ test_watchlist_uses_discover_endpoint_and_sanitizes_rating_key() {
 
 test_missing_config_returns_json_error
 test_flags_override_and_ping_success
+test_python_cli_ping_success
 test_env_file_loaded_for_libraries
 test_watchlist_uses_discover_endpoint_and_sanitizes_rating_key
 

@@ -592,7 +592,11 @@ done
     exit 1
 }
 
-set -- "${COMMAND_ARGS[@]}"
+if [[ "${#COMMAND_ARGS[@]}" -gt 0 ]]; then
+    set -- "${COMMAND_ARGS[@]}"
+else
+    set --
+fi
 
 case "${COMMAND}" in
     ping)

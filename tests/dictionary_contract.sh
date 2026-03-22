@@ -30,6 +30,7 @@ require_file "AGENTS.md"
 require_file "README.md"
 require_file "SKILL.md"
 require_file "Makefile"
+require_file "scripts/plex_cli.py"
 require_file "scripts/lib/plex_runtime.sh"
 require_file "references/api-cheatsheet.md"
 require_file "tests/smoke_plex.sh"
@@ -38,6 +39,10 @@ require_file "tests/mocks/mock_curl.sh"
 
 require_exec "scripts/lib/plex_runtime.sh"
 require_exec "tests/mocks/mock_curl.sh"
+require_text "AGENTS.md" "scripts/plex_cli.py"
+require_text "README.md" "python3 scripts/plex_cli.py ping"
+require_text "SKILL.md" "python3 ~/.agents/skills/plex/scripts/plex_cli.py ping"
+require_text "SKILL.md" "scripts/plex_cli.py"
 require_exec "scripts/commands/server/ping.sh"
 require_exec "scripts/commands/server/libraries.sh"
 require_exec "scripts/commands/server/search.sh"
@@ -65,5 +70,6 @@ bash "${REPO_ROOT}/scripts/commands/server/recently_added.sh" --help >/dev/null
 bash "${REPO_ROOT}/scripts/commands/server/metadata.sh" --help >/dev/null
 bash "${REPO_ROOT}/scripts/commands/server/refresh_section.sh" --help >/dev/null
 bash "${REPO_ROOT}/scripts/commands/watchlist/list.sh" --help >/dev/null
+python3 "${REPO_ROOT}/scripts/plex_cli.py" --help >/dev/null
 
 echo "Dictionary contract checks passed."

@@ -3,7 +3,7 @@
 AI agent skill for Plex Media Server.
 
 It reads from a local Plex server and from the Plex Discover Watchlist API.
-The public interface is a set of small shell commands under `scripts/commands/`.
+The stable public interface remains `scripts/plex_cli.py`, with shell wrappers under `scripts/commands/`.
 
 ## Installation
 
@@ -65,7 +65,20 @@ Config precedence:
 
 ## Public interface
 
-Use the wrappers in `scripts/commands/`.
+Preferred entrypoint for agents and existing integrations:
+
+```bash
+python3 scripts/plex_cli.py ping
+python3 scripts/plex_cli.py libraries
+python3 scripts/plex_cli.py search --query "Alien" --limit 20
+python3 scripts/plex_cli.py recently-added --limit 10
+python3 scripts/plex_cli.py sessions
+python3 scripts/plex_cli.py metadata --rating-key 12345
+python3 scripts/plex_cli.py refresh-section --section-id 1
+python3 scripts/plex_cli.py watchlist --filter movie
+```
+
+Shell wrappers in `scripts/commands/` are also supported:
 
 ### Server
 
@@ -109,6 +122,7 @@ Failure output starts with:
 - `README.md`: setup, public interface, layout, validation, and limits
 - `SKILL.md`: agent-facing contract
 - `Makefile`: standard validation entrypoints
+- `scripts/plex_cli.py`: stable public CLI entrypoint
 - `scripts/commands/`: public command surface
 - `scripts/lib/`: internal shared runtime
 - `references/`: endpoint notes
@@ -130,6 +144,7 @@ make test
 For a live server check:
 
 ```bash
+python3 scripts/plex_cli.py ping
 scripts/commands/server/ping.sh
 ```
 
@@ -138,6 +153,7 @@ scripts/commands/server/ping.sh
 - The Watchlist is a Plex Discover cloud feature, not a local server feature.
 - Watchlist IDs may not match local library IDs.
 - The skill is read-mostly. The only write action is `refresh_section.sh`.
+- `scripts/plex_cli.py` is kept for backward compatibility and should remain stable across non-breaking releases.
 
 ## License
 
