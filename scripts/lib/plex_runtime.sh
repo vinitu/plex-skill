@@ -13,7 +13,6 @@ CURL_BIN="${PLEX_CURL_BIN:-curl}"
 TIMEOUT=20
 BASE_URL=""
 TOKEN=""
-REQUEST_CONTENT_TYPE=""
 REQUEST_ERROR=""
 REQUEST_BODY=""
 NORMALIZED_VALUE=""
@@ -592,7 +591,6 @@ request_json() {
     local header_line=""
 
     REQUEST_ERROR=""
-    REQUEST_CONTENT_TYPE=""
     REQUEST_BODY=""
 
     headers_file="$(mktemp)"
@@ -623,8 +621,6 @@ request_json() {
         if [[ "${header_line}" == HTTP/* ]]; then
             http_code="${header_line#HTTP/* }"
             http_code="${http_code%% *}"
-        elif [[ "${header_line}" == [Cc]ontent-[Tt]ype:* ]]; then
-            REQUEST_CONTENT_TYPE="$(trim "${header_line#*:}")"
         fi
     done < "${headers_file}"
 
