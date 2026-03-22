@@ -62,6 +62,8 @@ Config precedence:
 2. Existing shell environment variables
 3. `.env` in the skill root
 
+HTTPS requests use `curl -k` by default so self-signed Plex certificates do not block the skill.
+
 ## Public interface
 
 Public commands:
