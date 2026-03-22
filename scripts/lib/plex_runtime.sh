@@ -9,7 +9,7 @@ DOTENV_EXAMPLE_PATH="${SKILL_ROOT}/.env.example"
 EXAMPLE_BASE_URL="http://YOUR_PLEX_IP:32400"
 EXAMPLE_TOKEN="YOUR_PLEX_TOKEN"
 DISCOVER_BASE_URL="https://discover.provider.plex.tv"
-CURL_BIN="${PLEX_CURL_BIN:-curl}"
+CURL_BIN=""
 TIMEOUT=20
 BASE_URL=""
 TOKEN=""
@@ -589,6 +589,7 @@ request_json() {
     local body_snippet=""
     local stderr_text=""
     local header_line=""
+    local curl_args=()
 
     REQUEST_ERROR=""
     REQUEST_BODY=""
@@ -597,19 +598,23 @@ request_json() {
     body_file="$(mktemp)"
     stderr_file="$(mktemp)"
 
-    if ! "${CURL_BIN}" \
-        -sS \
-        -X "${method}" \
-        --connect-timeout "${TIMEOUT}" \
-        --max-time "${TIMEOUT}" \
-        -D "${headers_file}" \
-        -o "${body_file}" \
-        -H "Accept: application/json" \
-        -H "X-Plex-Token: ${TOKEN}" \
-        -H "X-Plex-Product: OpenClaw Plex Skill" \
-        -H "X-Plex-Client-Identifier: openclaw-plex-skill" \
-        -H "X-Plex-Platform: Linux" \
-        "${url}" 2>"${stderr_file}"; then
+    curl_args=(
+        -sS
+        -k
+        -X "${method}"
+        --connect-timeout "${TIMEOUT}"
+        --max-time "${TIMEOUT}"
+        -D "${headers_file}"
+        -o "${body_file}"
+        -H "Accept: application/json"
+        -H "X-Plex-Token: ${TOKEN}"
+        -H "X-Plex-Product: OpenClaw Plex Skill"
+        -H "X-Plex-Client-Identifier: openclaw-plex-skill"
+        -H "X-Plex-Platform: Linux"
+        "${url}"
+    )
+
+    if ! "${CURL_BIN}" "${curl_args[@]}" 2>"${stderr_file}"; then
         stderr_text="$(<"${stderr_file}")"
         REQUEST_ERROR="Connection failed for ${path_label}: $(clean_error_text "${stderr_text}")"
         rm -f "${headers_file}" "${body_file}" "${stderr_file}"
@@ -885,6 +890,7 @@ count_json_objects_in_array() {
 }
 
 load_dotenv
+CURL_BIN="${PLEX_CURL_BIN:-curl}"
 BASE_URL="${PLEX_BASE_URL-}"
 TOKEN="${PLEX_TOKEN-}"
 ensure_command "${CURL_BIN}"

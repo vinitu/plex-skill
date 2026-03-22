@@ -160,6 +160,53 @@ test_flags_override_and_ping_success() {
     rm -rf "${skill_root}" "${output_file}" "${status_file}" "${request_log}"
 }
 
+test_requests_use_insecure_curl_by_default() {
+    local skill_root=""
+    local output=""
+    local request_log=""
+    local curl_wrapper=""
+    local flag_log=""
+
+    skill_root="$(create_skill_root)"
+    request_log="$(mktemp)"
+    flag_log="$(mktemp)"
+    curl_wrapper="$(mktemp)"
+
+    cat > "${curl_wrapper}" <<EOF
+#!/usr/bin/env bash
+flag_found=0
+for arg in "\$@"; do
+    if [[ "\$arg" == "-k" ]]; then
+        flag_found=1
+        break
+    fi
+done
+printf '%s' "\$flag_found" > "${flag_log}"
+exec "${MOCK_CURL}" "\$@"
+EOF
+    chmod +x "${curl_wrapper}"
+
+    cat > "${skill_root}/.env" <<EOF
+PLEX_BASE_URL=http://env.example:32400
+PLEX_TOKEN=env-token
+PLEX_CURL_BIN=${curl_wrapper}
+EOF
+
+    output="$(
+        MOCK_CURL_FIXTURES_DIR="${FIXTURES_DIR}" \
+        MOCK_CURL_LOG="${request_log}" \
+        "${skill_root}/scripts/commands/server/ping.sh" \
+            --base-url "http://127.0.0.1:32400/" \
+            --token "secret"
+    )"
+
+    assert_output_contains "${output}" '"success":true' "default insecure curl success flag"
+    assert_eq "1" "$(<"${flag_log}")" "default insecure curl flag"
+    assert_eq "GET http://127.0.0.1:32400/" "$(<"${request_log}")" "default insecure request url"
+
+    rm -rf "${skill_root}" "${request_log}" "${curl_wrapper}" "${flag_log}"
+}
+
 test_env_file_loaded_for_libraries() {
     local skill_root=""
     local output=""
@@ -406,6 +453,7 @@ test_http_error_returns_json_error() {
 test_missing_config_returns_json_error
 test_placeholder_config_returns_json_error
 test_flags_override_and_ping_success
+test_requests_use_insecure_curl_by_default
 test_env_file_loaded_for_libraries
 test_search_returns_query_and_encoded_request
 test_recently_added_section_route_and_section_id
