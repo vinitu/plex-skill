@@ -23,7 +23,12 @@ require_exec() {
 require_text() {
     local path="$1"
     local pattern="$2"
-    rg -q --fixed-strings "${pattern}" "${REPO_ROOT}/${path}" || fail "missing text '${pattern}' in ${path}"
+    if command -v rg >/dev/null 2>&1; then
+        rg -q --fixed-strings "${pattern}" "${REPO_ROOT}/${path}" || fail "missing text '${pattern}' in ${path}"
+        return
+    fi
+
+    grep -Fq -- "${pattern}" "${REPO_ROOT}/${path}" || fail "missing text '${pattern}' in ${path}"
 }
 
 require_file "AGENTS.md"
