@@ -25,7 +25,7 @@ jobs:
         run: |
           set -euo pipefail
           required=(
-            .env.example
+            assets/env.example
             AGENTS.md
             LICENSE
             README.md
@@ -51,8 +51,8 @@ jobs:
       - name: Ensure secrets file is not tracked
         run: |
           set -euo pipefail
-          if git ls-files --error-unmatch .env >/dev/null 2>&1; then
-            echo "::error file=.env::.env must stay untracked"
+          if git ls-files --error-unmatch assets/env >/dev/null 2>&1; then
+            echo "::error file=assets/env::assets/env must stay untracked"
             exit 1
           fi
 

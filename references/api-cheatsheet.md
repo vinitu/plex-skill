@@ -6,9 +6,9 @@ This file maps the public commands in `scripts/commands/` to Plex endpoints.
 
 - Header: `X-Plex-Token: <token>`
 - Base URL: `PLEX_BASE_URL` (example `http://192.168.107.236:32400`)
-- Config precedence: CLI flags -> shell env vars -> `.env`
+- Config precedence: CLI flags -> shell env vars -> `assets/env`
 - HTTPS behavior: requests use `curl -k` by default
-- Recommended setup: copy `.env.example` to `.env` in the skill root and replace placeholder values
+- Recommended setup: copy `assets/env.example` to `assets/env` and replace placeholder values
 - CLI dependencies: `bash`, `curl`
 
 ## Command -> Endpoint

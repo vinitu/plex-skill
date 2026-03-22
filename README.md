@@ -43,10 +43,10 @@ This skill lets agents:
 
 ## Configuration
 
-Copy `.env.example` to `.env` in the repo root and fill in your real values:
+Copy `assets/env.example` to `assets/env` and fill in your real values:
 
 ```bash
-cp .env.example .env
+cp assets/env.example assets/env
 ```
 
 ```dotenv
@@ -54,13 +54,15 @@ PLEX_BASE_URL=http://YOUR_PLEX_IP:32400
 PLEX_TOKEN=YOUR_PLEX_TOKEN
 ```
 
-The `.env` file must stay in the skill root, next to `SKILL.md`. Do not commit real Plex credentials.
+The runtime config file must stay at `assets/env`. Do not commit real Plex credentials.
 
 Config precedence:
 
 1. CLI flags: `--base-url` and `--token`
 2. Existing shell environment variables
-3. `.env` in the skill root
+3. `assets/env`
+
+HTTPS requests use `curl -k` by default so self-signed Plex certificates do not block the skill.
 
 HTTPS requests use `curl -k` by default so self-signed Plex certificates do not block the skill.
 
@@ -110,6 +112,7 @@ Failure output starts with:
 - `README.md`: setup, public interface, layout, validation, and limits
 - `SKILL.md`: agent-facing contract
 - `Makefile`: standard validation entrypoints
+- `assets/`: config template `env.example` and local runtime config `env`
 - `scripts/commands/`: public command surface
 - `scripts/lib/`: internal shared runtime
 - `references/`: endpoint notes

@@ -33,11 +33,12 @@ create_skill_root() {
     root="$(mktemp -d)"
     mkdir -p "${root}/scripts"
     mkdir -p "${root}/scripts/lib"
+    mkdir -p "${root}/assets"
     cp "${SOURCE_SCRIPT}" "${root}/scripts/lib/plex_runtime.sh"
     cp -R "${SOURCE_COMMANDS_DIR}" "${root}/scripts/commands"
     chmod +x "${root}/scripts/lib/plex_runtime.sh"
-    cp "${REPO_ROOT}/.env.example" "${root}/.env.example"
-    printf 'PLEX_BASE_URL=http://env.example:32400\nPLEX_TOKEN=env-token\n' > "${root}/.env"
+    cp "${REPO_ROOT}/assets/env.example" "${root}/assets/env.example"
+    printf 'PLEX_BASE_URL=http://env.example:32400\nPLEX_TOKEN=env-token\n' > "${root}/assets/env"
     echo "${root}"
 }
 
@@ -87,7 +88,7 @@ test_missing_config_returns_json_error() {
     local status=""
 
     skill_root="$(create_skill_root)"
-    rm -f "${skill_root}/.env"
+    rm -f "${skill_root}/assets/env"
 
     output_file="$(mktemp)"
     status_file="$(mktemp)"
@@ -97,7 +98,7 @@ test_missing_config_returns_json_error() {
 
     assert_eq "1" "${status}" "missing config exit code"
     assert_output_contains "${output}" '"success":false' "missing config success flag"
-    assert_output_contains "${output}" '.env.example' "missing config error"
+    assert_output_contains "${output}" 'assets/env.example' "missing config error"
 
     rm -rf "${skill_root}" "${output_file}" "${status_file}"
 }
@@ -110,7 +111,7 @@ test_placeholder_config_returns_json_error() {
     local status=""
 
     skill_root="$(create_skill_root)"
-    cp "${REPO_ROOT}/.env.example" "${skill_root}/.env"
+    cp "${REPO_ROOT}/assets/env.example" "${skill_root}/assets/env"
 
     output_file="$(mktemp)"
     status_file="$(mktemp)"
@@ -186,7 +187,7 @@ exec "${MOCK_CURL}" "\$@"
 EOF
     chmod +x "${curl_wrapper}"
 
-    cat > "${skill_root}/.env" <<EOF
+    cat > "${skill_root}/assets/env" <<EOF
 PLEX_BASE_URL=http://env.example:32400
 PLEX_TOKEN=env-token
 PLEX_CURL_BIN=${curl_wrapper}
