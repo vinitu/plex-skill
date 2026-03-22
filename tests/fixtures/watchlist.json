@@ -1,0 +1,14 @@
+{
+  "MediaContainer": {
+    "Metadata": [
+      {
+        "type": "movie",
+        "title": "Demo",
+        "year": 2024,
+        "guid": "plex://movie/demo",
+        "ratingKey": "NaN",
+        "summary": "summary"
+      }
+    ]
+  }
+}

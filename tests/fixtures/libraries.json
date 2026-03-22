@@ -1,0 +1,16 @@
+{
+  "MediaContainer": {
+    "Directory": [
+      {
+        "key": "1",
+        "title": "Movies",
+        "type": "movie",
+        "agent": "tv.plex.agents.movie",
+        "scanner": "Plex Movie",
+        "language": "en",
+        "updatedAt": "1700000001",
+        "scannedAt": "1700000002"
+      }
+    ]
+  }
+}

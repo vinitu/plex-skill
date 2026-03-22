@@ -15,27 +15,34 @@ concurrency:
 
 jobs:
   lint:
-    name: Lint Python & Docs
+    name: Lint Bash & Docs
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
       - name: Validate repository structure
         run: |
           set -euo pipefail
           required=(
+            .env.example
             AGENTS.md
             LICENSE
             README.md
             SKILL.md
-            scripts/plex_cli.py
+            Makefile
+            scripts/lib/plex_runtime.sh
+            scripts/commands/server/libraries.sh
+            scripts/commands/server/metadata.sh
+            scripts/commands/server/ping.sh
+            scripts/commands/server/recently_added.sh
+            scripts/commands/server/refresh_section.sh
+            scripts/commands/server/search.sh
+            scripts/commands/server/sessions.sh
+            scripts/commands/watchlist/list.sh
             references/api-cheatsheet.md
+            tests/smoke_plex.sh
+            tests/dictionary_contract.sh
           )
           for path in "${required[@]}"; do
             [ -f "$path" ] || { echo "::error file=$path::Missing required file"; exit 1; }
@@ -49,11 +56,23 @@ jobs:
             exit 1
           fi
 
-      - name: Syntax-check CLI
-        run: python3 -m py_compile scripts/plex_cli.py
+      - name: Run structural checks
+        run: make check
 
-      - name: Smoke-check help output
-        run: python3 scripts/plex_cli.py --help >/dev/null
+      - name: Run compile checks
+        run: make compile
+
+      - name: Check shell scripts
+        run: |
+          set -euo pipefail
+          if command -v shellcheck >/dev/null 2>&1; then
+            find scripts tests -name '*.sh' -exec shellcheck {} +
+          else
+            echo "shellcheck not available, skipping"
+          fi
+
+      - name: Run tests
+        run: make test
 
       - name: Validate SKILL.md frontmatter
         run: |

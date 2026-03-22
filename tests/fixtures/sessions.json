@@ -1,0 +1,19 @@
+{
+  "MediaContainer": {
+    "Video": [
+      {
+        "ratingKey": "12345",
+        "title": "Alien",
+        "type": "movie",
+        "year": "1979",
+        "User": {
+          "title": "demo-user"
+        },
+        "Player": {
+          "product": "Plex Web",
+          "state": "playing"
+        }
+      }
+    ]
+  }
+}

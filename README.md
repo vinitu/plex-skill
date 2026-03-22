@@ -1,8 +1,9 @@
 # plex-skill
 
-AI agent skill for interacting with Plex Media Server via its HTTP API and plex.tv cloud API.
+AI agent skill for Plex Media Server.
 
-Works with any local Plex Media Server and the plex.tv Watchlist.
+It reads from a local Plex server and from the Plex Discover Watchlist API.
+The public interface is the shell command surface under `scripts/commands/`.
 
 ## Installation
 
@@ -16,117 +17,130 @@ Or with [skills.sh](https://skills.sh):
 skills.sh add vinitu/plex-skill
 ```
 
-## What it does
+Package name: `vinitu/plex-skill`
 
-This skill gives AI agents (Claude Code, Cursor, Copilot, etc.) the ability to:
+Installed skill directory depends on the skill manager configuration.
 
-- **Ping** the Plex server to verify connectivity and auth
-- **List** libraries (sections) with metadata
-- **Search** media by title across all libraries
-- **Recently added** items globally or per library
-- **Sessions** — view active playback sessions
-- **Metadata** — inspect detailed info for any item by rating key
-- **Refresh** a library section (trigger scan)
-- **Watchlist** — read the user's Plex Watchlist from plex.tv (cloud)
+## Purpose and scope
 
-## How it works
+This skill lets agents:
 
-Uses the Plex Media Server HTTP/XML API for local server operations and `python-plexapi` for the plex.tv Watchlist (which is a cloud-only feature).
-
-All commands are exposed through a single CLI script: `scripts/plex_cli.py`.
+- verify Plex connectivity;
+- list libraries;
+- search media;
+- read recently added items;
+- inspect active sessions;
+- inspect metadata by rating key;
+- trigger a library refresh;
+- read the user's Watchlist.
 
 ## Requirements
 
-- Python 3.8+
-- A running Plex Media Server with a valid token
-- `plexapi` package (only for the `watchlist` command): `pip3 install plexapi`
+- Bash
+- `curl`
+- a running Plex Media Server
+- a valid `PLEX_TOKEN`
 
 ## Configuration
 
-Copy `.env.example` to `.env` in the skill root and fill in your real values:
+Copy `.env.example` to `.env` in the repo root and fill in your real values:
 
 ```bash
 cp .env.example .env
 ```
 
-Then replace the placeholder values in `.env`.
-
-```
+```dotenv
 PLEX_BASE_URL=http://YOUR_PLEX_IP:32400
 PLEX_TOKEN=YOUR_PLEX_TOKEN
 ```
 
-Configuration sources are resolved in this order:
+The `.env` file must stay in the skill root, next to `SKILL.md`. Do not commit real Plex credentials.
 
-1. CLI flags: `--base-url` / `--token`
-2. Existing shell env vars: `PLEX_BASE_URL` / `PLEX_TOKEN`
-3. `.env` file in the skill root
+Config precedence:
 
-The CLI auto-loads `.env`, validates that both values are present, and returns JSON errors if `.env` is missing, incomplete, or still contains placeholder values from `.env.example`.
+1. CLI flags: `--base-url` and `--token`
+2. Existing shell environment variables
+3. `.env` in the skill root
 
-## Quick start
+## Public interface
 
-```bash
-cp .env.example .env
-# edit .env and replace the placeholder values
-python3 scripts/plex_cli.py ping
-python3 scripts/plex_cli.py libraries
-python3 scripts/plex_cli.py search --query "Alien" --limit 20
-python3 scripts/plex_cli.py recently-added --limit 10
-python3 scripts/plex_cli.py sessions
-python3 scripts/plex_cli.py watchlist --filter movie
-```
+Public commands:
 
-## Watchlist
-
-The Watchlist lives on **plex.tv** (cloud), not on the local Plex server. The local server API has no watchlist endpoint.
-
-Filter by type:
+### Server
 
 ```bash
-python3 scripts/plex_cli.py watchlist --filter movie
-python3 scripts/plex_cli.py watchlist --filter show
+scripts/commands/server/ping.sh
+scripts/commands/server/libraries.sh
+scripts/commands/server/search.sh --query "Alien" --limit 20
+scripts/commands/server/recently_added.sh --limit 10
+scripts/commands/server/sessions.sh
+scripts/commands/server/metadata.sh --rating-key 12345
+scripts/commands/server/refresh_section.sh --section-id 1
 ```
 
-Sort options:
+### Watchlist
 
-| Sort | Description |
-|------|-------------|
-| `watchlistedAt:desc` | Most recently added (default) |
-| `watchlistedAt:asc` | Oldest first |
-| `titleSort:asc` | Alphabetical A-Z |
-| `titleSort:desc` | Alphabetical Z-A |
-| `originallyAvailableAt:desc` | Newest releases first |
-| `rating:desc` | Highest rated first |
+```bash
+scripts/commands/watchlist/list.sh
+scripts/commands/watchlist/list.sh --filter movie
+scripts/commands/watchlist/list.sh --sort titleSort:asc
+```
 
-## Scripts
+## Output contract
 
-| Script | Purpose |
-|--------|---------|
-| `scripts/plex_cli.py` | Main CLI — all Plex operations |
+All public commands return JSON.
 
-## Output
-
-All commands return JSON for easy integration with AI agents and automation tools.
-
-Typical validation errors also stay machine-readable:
+Success output starts with:
 
 ```json
-{
-  "success": false,
-  "error": "Missing Plex configuration: PLEX_BASE_URL, PLEX_TOKEN. Create /path/to/.env from /path/to/.env.example, export the variables, or pass --base-url/--token."
-}
+{"success": true}
 ```
+
+Failure output starts with:
+
+```json
+{"success": false, "error": "message"}
+```
+
+## Repository layout
+
+- `AGENTS.md`: rules for coding agents
+- `README.md`: setup, public interface, layout, validation, and limits
+- `SKILL.md`: agent-facing contract
+- `Makefile`: standard validation entrypoints
+- `scripts/commands/`: public command surface
+- `scripts/lib/`: internal shared runtime
+- `references/`: endpoint notes
+- `tests/`: smoke tests, contract checks, mocks, and fixtures
+- `.github/workflows/`: CI
+
+This repo does not use `scripts/applescripts/` because it is an HTTP skill.
+Unlike the default macOS skill schema, this repo uses `scripts/lib/plex_runtime.sh` as a shared internal backend for the public shell wrappers.
 
 ## Validation
 
-At minimum, verify the CLI and tests locally:
+Run from the repo root:
 
 ```bash
-python3 -m py_compile scripts/plex_cli.py
-python3 -m unittest discover -s tests
-python3 scripts/plex_cli.py ping
+make check
+make compile
+make test
 ```
+
+For a live server check:
+
+```bash
+scripts/commands/server/ping.sh
+```
+
+The command wrappers must remain runnable from the repo root.
+
+## Known limits
+
+- The Watchlist is a Plex Discover cloud feature, not a local server feature.
+- Watchlist IDs may not match local library IDs.
+- The skill is read-mostly. The only write action is `refresh_section.sh`.
+- Public wrapper scripts delegate parsing and JSON shaping to `scripts/lib/plex_runtime.sh`. This intentional deviation from the default wrapper pattern is part of the current compatibility design.
 
 ## License
 
