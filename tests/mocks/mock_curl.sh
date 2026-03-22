@@ -42,6 +42,10 @@ if [[ "${MOCK_CURL_MODE:-}" == "network_error" ]]; then
     exit 7
 fi
 
+mock_http_code="${MOCK_CURL_HTTP_CODE:-200}"
+mock_content_type="${MOCK_CURL_CONTENT_TYPE:-application/json}"
+mock_body="${MOCK_CURL_BODY:-}"
+
 [[ -n "${headers_file}" ]] || {
     echo "missing headers output" >&2
     exit 1
@@ -61,13 +65,15 @@ elif [[ "${url}" == "http://env.example:32400/library/sections" ]]; then
     fixture="libraries.json"
 elif [[ "${url}" == "http://env.example:32400/library/recentlyAdded"* ]]; then
     fixture="recently-added.json"
+elif [[ "${url}" == "http://env.example:32400/library/sections/"*"/recentlyAdded"* ]]; then
+    fixture="recently-added.json"
 elif [[ "${url}" == "http://env.example:32400/status/sessions" ]]; then
     fixture="sessions.json"
-elif [[ "${url}" == "http://env.example:32400/library/metadata/12345" ]]; then
+elif [[ "${url}" == "http://env.example:32400/library/metadata/"* ]]; then
     fixture="metadata.json"
 elif [[ "${url}" == "http://env.example:32400/search"* ]]; then
     fixture="search.json"
-elif [[ "${url}" == "http://env.example:32400/library/sections/2/refresh" ]]; then
+elif [[ "${url}" == "http://env.example:32400/library/sections/"*"/refresh" ]]; then
     fixture=""
 else
     echo "unexpected url: ${url}" >&2
@@ -78,9 +84,11 @@ if [[ -n "${MOCK_CURL_LOG:-}" ]]; then
     printf '%s %s\n' "${method}" "${url}" >> "${MOCK_CURL_LOG}"
 fi
 
-printf 'HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n' > "${headers_file}"
+printf 'HTTP/1.1 %s Mock\r\nContent-Type: %s\r\n\r\n' "${mock_http_code}" "${mock_content_type}" > "${headers_file}"
 
-if [[ -n "${fixture}" ]]; then
+if [[ -n "${mock_body}" ]]; then
+    printf '%s' "${mock_body}" > "${body_file}"
+elif [[ -n "${fixture}" ]]; then
     cp "${MOCK_CURL_FIXTURES_DIR}/${fixture}" "${body_file}"
 else
     : > "${body_file}"

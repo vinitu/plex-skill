@@ -1,14 +1,14 @@
 # Plex API Cheat Sheet
 
-This file maps the stable `scripts/plex_cli.py` commands, and the equivalent public wrappers in `scripts/commands/`, to Plex endpoints.
+This file maps the public commands in `scripts/commands/` to Plex endpoints.
 
 ## Auth
 
 - Header: `X-Plex-Token: <token>`
 - Base URL: `PLEX_BASE_URL` (example `http://192.168.107.236:32400`)
 - Config precedence: CLI flags -> shell env vars -> `.env`
-- Recommended setup: copy `.env.example` to `.env` and replace placeholder values
-- CLI dependencies: `bash`, `curl`, `jq`
+- Recommended setup: copy `.env.example` to `.env` in the skill root and replace placeholder values
+- CLI dependencies: `bash`, `curl`
 
 ## Command -> Endpoint
 

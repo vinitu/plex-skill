@@ -3,7 +3,7 @@
 AI agent skill for Plex Media Server.
 
 It reads from a local Plex server and from the Plex Discover Watchlist API.
-The stable public interface remains `scripts/plex_cli.py`, with shell wrappers under `scripts/commands/`.
+The public interface is the shell command surface under `scripts/commands/`.
 
 ## Installation
 
@@ -19,9 +19,7 @@ skills.sh add vinitu/plex-skill
 
 Package name: `vinitu/plex-skill`
 
-Installed directory: `~/.agents/skills/plex`
-
-The package name and installed directory are different. Use the installed directory in absolute command examples.
+Installed skill directory depends on the skill manager configuration.
 
 ## Purpose and scope
 
@@ -40,7 +38,6 @@ This skill lets agents:
 
 - Bash
 - `curl`
-- `jq`
 - a running Plex Media Server
 - a valid `PLEX_TOKEN`
 
@@ -57,6 +54,8 @@ PLEX_BASE_URL=http://YOUR_PLEX_IP:32400
 PLEX_TOKEN=YOUR_PLEX_TOKEN
 ```
 
+The `.env` file must stay in the skill root, next to `SKILL.md`. Do not commit real Plex credentials.
+
 Config precedence:
 
 1. CLI flags: `--base-url` and `--token`
@@ -65,20 +64,7 @@ Config precedence:
 
 ## Public interface
 
-Preferred entrypoint for agents and existing integrations:
-
-```bash
-python3 scripts/plex_cli.py ping
-python3 scripts/plex_cli.py libraries
-python3 scripts/plex_cli.py search --query "Alien" --limit 20
-python3 scripts/plex_cli.py recently-added --limit 10
-python3 scripts/plex_cli.py sessions
-python3 scripts/plex_cli.py metadata --rating-key 12345
-python3 scripts/plex_cli.py refresh-section --section-id 1
-python3 scripts/plex_cli.py watchlist --filter movie
-```
-
-Shell wrappers in `scripts/commands/` are also supported:
+Public commands:
 
 ### Server
 
@@ -122,7 +108,6 @@ Failure output starts with:
 - `README.md`: setup, public interface, layout, validation, and limits
 - `SKILL.md`: agent-facing contract
 - `Makefile`: standard validation entrypoints
-- `scripts/plex_cli.py`: stable public CLI entrypoint
 - `scripts/commands/`: public command surface
 - `scripts/lib/`: internal shared runtime
 - `references/`: endpoint notes
@@ -130,6 +115,7 @@ Failure output starts with:
 - `.github/workflows/`: CI
 
 This repo does not use `scripts/applescripts/` because it is an HTTP skill.
+Unlike the default macOS skill schema, this repo uses `scripts/lib/plex_runtime.sh` as a shared internal backend for the public shell wrappers.
 
 ## Validation
 
@@ -144,16 +130,17 @@ make test
 For a live server check:
 
 ```bash
-python3 scripts/plex_cli.py ping
 scripts/commands/server/ping.sh
 ```
+
+The command wrappers must remain runnable from the repo root.
 
 ## Known limits
 
 - The Watchlist is a Plex Discover cloud feature, not a local server feature.
 - Watchlist IDs may not match local library IDs.
 - The skill is read-mostly. The only write action is `refresh_section.sh`.
-- `scripts/plex_cli.py` is kept for backward compatibility and should remain stable across non-breaking releases.
+- Public wrapper scripts delegate parsing and JSON shaping to `scripts/lib/plex_runtime.sh`. This intentional deviation from the default wrapper pattern is part of the current compatibility design.
 
 ## License
 

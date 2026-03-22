@@ -31,13 +31,20 @@ jobs:
         run: |
           set -euo pipefail
           required=(
+            .env.example
             AGENTS.md
             LICENSE
             README.md
             SKILL.md
             Makefile
             scripts/lib/plex_runtime.sh
+            scripts/commands/server/libraries.sh
+            scripts/commands/server/metadata.sh
             scripts/commands/server/ping.sh
+            scripts/commands/server/recently_added.sh
+            scripts/commands/server/refresh_section.sh
+            scripts/commands/server/search.sh
+            scripts/commands/server/sessions.sh
             scripts/commands/watchlist/list.sh
             references/api-cheatsheet.md
             tests/smoke_plex.sh
@@ -60,6 +67,15 @@ jobs:
 
       - name: Run compile checks
         run: make compile
+
+      - name: Check shell scripts
+        run: |
+          set -euo pipefail
+          if command -v shellcheck >/dev/null 2>&1; then
+            find scripts tests -name '*.sh' -exec shellcheck {} +
+          else
+            echo "shellcheck not available, skipping"
+          fi
 
       - name: Run tests
         run: make test
